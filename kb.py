@@ -1,4 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from sql_db import *
 
 send_welcome_kb = ReplyKeyboardMarkup(
     keyboard=[
@@ -61,3 +63,26 @@ verify_kb = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+request_contact_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Отправить контакт", request_contact=True),
+        ],
+    ],
+    resize_keyboard=True
+)
+
+def buy_callback_operator_kb(active_orders):
+    builder = InlineKeyboardBuilder()
+    for order in active_orders:
+        username = get_username(order[1])
+        builder.row(InlineKeyboardButton(text=f"{username}({order[3]} ГБ - {order[4]} KZT)", callback_data=f"user_{order[1]}"))
+    return builder.as_markup()
+
+def msg_profile_kb(user_id):
+    user_orders = sql_get_orders_by_user(user_id)
+    builder = InlineKeyboardBuilder()
+    for order in user_orders:
+        builder.row(InlineKeyboardButton(text=f"❌   {order[3]} ГБ - {order[4]} KZT   ❌", callback_data=f"del_order_{order[0]}"))
+    return builder.as_markup()
